@@ -1,7 +1,12 @@
 {
-  "name": "EA-NodeJS-Template",
+  "name": "xlr8-external-adapter",
   "version": "0.1.0",
-  "author": "",
+  "author": {
+    "name": "Joe Zakielarz",
+    "email": "jjzfive@harkness.io",
+    "url": "https://github.com/jjzfive"
+  },
+  "main": "index.js",
   "description": "",
   "license": "MIT",
   "scripts": {

@@ -61,7 +61,7 @@ const createRequest = (input, callback) => {
       callback(500, Requester.errored(jobRunID, error));
     });
 };
-
+/*
 // This is a wrapper to allow the function to work with
 // GCP Functions
 exports.gcpservice = (req, res) => {
@@ -69,6 +69,7 @@ exports.gcpservice = (req, res) => {
     res.status(statusCode).send(data);
   });
 };
+*/
 
 // This is a wrapper to allow the function to work with
 // AWS Lambda
