@@ -1,3 +1,6 @@
+// Based off of code from thodges-gh/CL-EA-NodeJS-Template (I love you Patrick Collins)
+// Author: @JJZFIVE
+
 const { Requester, Validator } = require("@chainlink/external-adapter");
 
 // Define custom error scenarios for the API.
@@ -31,7 +34,7 @@ const createRequest = (input, callback) => {
   const url = `https://xlr8-api-v1.herokuapp.com/${model}/${wrap}/${engine}`;
 
   const headers = {
-    Authorization: "bearer " + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+    Authorization: process.env.SECRET_API_KEY,
   };
 
   // This is where you would add method and headers
