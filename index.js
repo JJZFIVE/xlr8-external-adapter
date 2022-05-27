@@ -49,13 +49,11 @@ const createRequest = async (input, callback) => {
     engine: engine,
   });
 
-  console.log("car", car);
-
   const response = {
     jobRunID: jobRunID,
     data: null,
     result: null,
-    statusCode: null,
+    statusCode: 200,
   };
 
   try {
@@ -64,9 +62,6 @@ const createRequest = async (input, callback) => {
       result: car.fullcarmetadata,
     };
     response.result = car.fullcarmetadata;
-    response.statusCode = 200;
-
-    console.log("My response:", response);
 
     callback(200, Requester.success(jobRunID, response));
   } catch (error) {
