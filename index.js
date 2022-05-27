@@ -2,6 +2,19 @@
 // Author: @JJZFIVE
 
 const { Requester, Validator } = require("@chainlink/external-adapter");
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const carModel = require("./models/carmodels");
+
+dotenv.config();
+const URI = process.env.DB_URI;
+
+mongoose
+  .connect(URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(console.log("connected!"));
 
 // Define custom error scenarios for the API.
 // Return true for the adapter to retry.
@@ -21,31 +34,33 @@ const customParams = {
   endpoint: false,
 };
 
-const createRequest = (input, callback) => {
+const createRequest = async (input, callback) => {
   // The Validator helps you validate the Chainlink request data
   const validator = new Validator(callback, input, customParams);
   const jobRunID = validator.validated.id;
   const endpoint = validator.validated.data.endpoint || "price";
 
-  const model = validator.validated.data.model;
-  const wrap = validator.validated.data.wrap;
-  const engine = validator.validated.data.engine;
+  const model = parseInt(validator.validated.data.model);
+  const wrap = parseInt(validator.validated.data.wrap);
+  const engine = parseInt(validator.validated.data.engine);
 
-  const url = `https://xlr8-api-v1.herokuapp.com/${model}/${wrap}/${engine}`;
+  const car = await carModel.find({
+    model: model,
+    wrap: wrap,
+    engine: engine,
+  });
 
-  const headers = {
-    Authorization: process.env.SECRET_API_KEY,
-  };
+  console.log("car", car);
 
-  // This is where you would add method and headers
-  // you can add method like GET or POST and add it to the config
-  // The default is GET requests
-  // method = 'get'
-  // headers = 'headers.....'
-  const config = {
-    url,
-    // headers,
-  };
+  let returnURI;
+  try {
+    returnURI = { tokenURI: car[0].fullcarmetadata };
+    console.log("returned URI:", returnURI);
+    callback(200, Requester.success(jobRunID, response));
+  } catch (error) {
+    returnURI = { tokenURI: "Invalid parameters" };
+    console.log(error);
+  }
 
   // The Requester allows API calls be retry in case of timeout
   // or connection failure
@@ -71,6 +86,7 @@ exports.gcpservice = (req, res) => {
 };
 */
 
+/*
 // This is a wrapper to allow the function to work with
 // AWS Lambda
 exports.handler = (event, context, callback) => {
@@ -78,10 +94,11 @@ exports.handler = (event, context, callback) => {
     callback(null, data);
   });
 };
+*/
 
 // This is a wrapper to allow the function to work with
 // newer AWS Lambda implementations
-exports.handlerv2 = (event, context, callback) => {
+exports.handler = (event, context, callback) => {
   createRequest(JSON.parse(event.body), (statusCode, data) => {
     callback(null, {
       statusCode: statusCode,
