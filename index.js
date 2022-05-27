@@ -38,13 +38,12 @@ const createRequest = async (input, callback) => {
   // The Validator helps you validate the Chainlink request data
   const validator = new Validator(callback, input, customParams);
   const jobRunID = validator.validated.id;
-  const endpoint = validator.validated.data.endpoint || "price";
 
   const model = parseInt(validator.validated.data.model);
   const wrap = parseInt(validator.validated.data.wrap);
   const engine = parseInt(validator.validated.data.engine);
 
-  const car = await carModel.find({
+  const car = await carModel.findOne({
     model: model,
     wrap: wrap,
     engine: engine,
@@ -52,29 +51,42 @@ const createRequest = async (input, callback) => {
 
   console.log("car", car);
 
-  let returnURI;
+  const response = {
+    jobRunID: jobRunID,
+    data: null,
+    result: null,
+    statusCode: null,
+  };
+
   try {
-    returnURI = { tokenURI: car[0].fullcarmetadata };
-    console.log("returned URI:", returnURI);
+    response.data = {
+      tokenURI: car.fullcarmetadata,
+      result: car.fullcarmetadata,
+    };
+    response.result = car.fullcarmetadata;
+    response.statusCode = 200;
+
+    console.log("My response:", response);
+
     callback(200, Requester.success(jobRunID, response));
   } catch (error) {
-    returnURI = { tokenURI: "Invalid parameters" };
-    console.log(error);
+    console.log("my error:", error);
+    callback(500, Requester.errored(jobRunID, error));
   }
 
   // The Requester allows API calls be retry in case of timeout
   // or connection failure
-  Requester.request(config, customError)
-    .then((response) => {
-      // It's common practice to store the desired value at the top-level
-      // result key. This allows different adapters to be compatible with
-      // one another.
-      response.data.result = Requester.getResult(response.data, ["tokenURI"]);
-      callback(response.status, Requester.success(jobRunID, response));
-    })
-    .catch((error) => {
-      callback(500, Requester.errored(jobRunID, error));
-    });
+  // Requester.request(config, customError)
+  //   .then((response) => {
+  //     // It's common practice to store the desired value at the top-level
+  //     // result key. This allows different adapters to be compatible with
+  //     // one another.
+  //     response.data.result = Requester.getResult(response.data, ["tokenURI"]);
+  //     callback(response.status, Requester.success(jobRunID, response));
+  //   })
+  //   .catch((error) => {
+  //     callback(500, Requester.errored(jobRunID, error));
+  //   });
 };
 /*
 // This is a wrapper to allow the function to work with
