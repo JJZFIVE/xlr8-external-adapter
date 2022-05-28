@@ -61,9 +61,11 @@ const createRequest = async (input, callback) => {
       tokenURI: car.fullcarmetadata,
       result: car.fullcarmetadata,
     };
-    response.result = car.fullcarmetadata;
+    const requesterSuccess = Requester.success(jobRunID, response);
 
-    callback(200, Requester.success(jobRunID, response));
+    requesterSuccess.statusCode = 200;
+
+    callback(200, requesterSuccess);
   } catch (error) {
     console.log("my error:", error);
     callback(500, Requester.errored(jobRunID, error));
@@ -105,14 +107,24 @@ exports.handler = (event, context, callback) => {
 
 // This is a wrapper to allow the function to work with
 // newer AWS Lambda implementations
-exports.handler = (event, context, callback) => {
-  createRequest(JSON.parse(event.body), (statusCode, data) => {
-    callback(null, {
-      statusCode: statusCode,
-      body: JSON.stringify(data),
-      isBase64Encoded: false,
-    });
+exports.handler = async (event, context) => {
+  // Changed from originally JSON.parse(event.body)
+  let data;
+  let statusCode;
+  await createRequest(event, (retstatusCode, retdata) => {
+    data = retdata;
+    statusCode = retstatusCode;
   });
+
+  return {
+    statusCode: statusCode,
+    body: JSON.stringify(data),
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json",
+    },
+    isBase64Encoded: false,
+  };
 };
 
 // This allows the function to be exported for testing

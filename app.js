@@ -8,9 +8,7 @@ const port = process.env.PORT || 8080;
 app.use(bodyParser.json());
 
 app.post("/", (req, res) => {
-  console.log("POST Data: ", req.body);
   createRequest(req.body, (status, result) => {
-    console.log("result", result);
     res.status(status).json(result);
   });
 });
