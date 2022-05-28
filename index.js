@@ -16,13 +16,6 @@ mongoose
   })
   .then(console.log("connected!"));
 
-// Define custom error scenarios for the API.
-// Return true for the adapter to retry.
-const customError = (data) => {
-  if (data.Response === "Error") return true;
-  return false;
-};
-
 // Define custom parameters to be used by the adapter.
 // Extra parameters can be stated in the extra object,
 // with a Boolean value indicating whether or not they
@@ -70,22 +63,8 @@ const createRequest = async (input, callback) => {
     console.log("my error:", error);
     callback(500, Requester.errored(jobRunID, error));
   }
-
-  // The Requester allows API calls be retry in case of timeout
-  // or connection failure
-  // Requester.request(config, customError)
-  //   .then((response) => {
-  //     // It's common practice to store the desired value at the top-level
-  //     // result key. This allows different adapters to be compatible with
-  //     // one another.
-  //     response.data.result = Requester.getResult(response.data, ["tokenURI"]);
-  //     callback(response.status, Requester.success(jobRunID, response));
-  //   })
-  //   .catch((error) => {
-  //     callback(500, Requester.errored(jobRunID, error));
-  //   });
 };
-/*
+
 // This is a wrapper to allow the function to work with
 // GCP Functions
 exports.gcpservice = (req, res) => {
@@ -93,40 +72,7 @@ exports.gcpservice = (req, res) => {
     res.status(statusCode).send(data);
   });
 };
-*/
-
-/*
-// This is a wrapper to allow the function to work with
-// AWS Lambda
-exports.handler = (event, context, callback) => {
-  createRequest(event, (statusCode, data) => {
-    callback(null, data);
-  });
-};
-*/
-
-// This is a wrapper to allow the function to work with
-// newer AWS Lambda implementations
-exports.handler = async (event, context) => {
-  // Changed from originally JSON.parse(event.body)
-  let data;
-  let statusCode;
-  await createRequest(event, (retstatusCode, retdata) => {
-    data = retdata;
-    statusCode = retstatusCode;
-  });
-
-  return {
-    statusCode: statusCode,
-    body: JSON.stringify(data),
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Content-Type": "application/json",
-    },
-    isBase64Encoded: false,
-  };
-};
 
 // This allows the function to be exported for testing
 // or for running in express
-module.exports.createRequest = createRequest;
+//module.exports.createRequest = createRequest;
